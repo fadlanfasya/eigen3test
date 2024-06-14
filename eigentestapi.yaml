@@ -1,0 +1,292 @@
+openapi: 3.0.3
+info:
+  title: Eigen 3 API Test 
+  description: |-
+    This is a Eigen 3 API test documentation.
+    
+    Some useful links:
+    - [The Repository](https://github.com/fadlanfasya/eigen3test)
+    
+  termsOfService: http://swagger.io/terms/
+  contact:
+    email: apiteam@swagger.io
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.11
+externalDocs:
+  description: Find out more about Swagger
+  url: http://swagger.io
+servers:
+  - url: https://localhost:3000/api/
+tags:
+  - name: books
+    description: For Book List, Borrow and Return Book
+    externalDocs:
+      description: Find out more
+      url: http://swagger.io
+  - name: members
+    description: For Members
+    externalDocs:
+      description: Find out more about our store
+      url: http://swagger.io
+  
+paths:
+  /books:
+    get:
+      tags:
+        - books
+      summary: Finds All Books
+      description: Finds All Books
+      operationId: getAllBooks
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  oneOf:
+                    - $ref: '#/components/schemas/Book'
+                    - $ref: '#/components/schemas/Book'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Book'
+        '500':
+          description: Error fetching books
+  /{bookCode}/borrow/{memberCode}:
+    post:
+      tags:
+        - books
+      summary: Borrow Books
+      description: Borrow Books for Member
+      operationId: borrowBook
+      parameters:
+        - name: bookCode
+          in: path
+          description: Book code
+          required: true
+          schema:
+            type: string
+        - name: memberCode
+          in: path
+          description: Member code
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful Operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: 
+                    type: string
+                    example: Book NRN-7 borrowed by member M001
+        '404':
+          description: Invalid book/member code
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: 
+                    type: string
+                    example: Book JK-45 not Found
+        '400':
+          description: Book out of stock/Member already borrowed 2 books
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: 
+                    type: string
+                    example: Book NRN-7 is out of stock
+        '500':
+          description: Error borrow book    
+  /{bookCode}/return/{memberCode}:
+    post:
+      tags:
+        - books
+      summary: Return Books
+      description: Return Books for Member
+      operationId: returnBook
+      parameters:
+        - name: bookCode
+          in: path
+          description: Book code
+          required: true
+          schema:
+            type: string
+        - name: memberCode
+          in: path
+          description: Member code
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful Operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: 
+                    type: string
+                    example: Book NRN-7 returned by member M001
+        '404':
+          description: Invalid book/member code
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: 
+                    type: string
+                    example: Book JK-45 not Found
+        '400':
+          description: Member did not borrow book
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: 
+                    type: string
+                    example: Member M001 did not borrow book NRN-7
+        '500':
+          description: Error Return Book            
+  /members:
+    get:
+      tags:
+        - members
+      summary: Returns all members
+      description: Get All Members
+      operationId: getAllMembers
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Member'
+        '500':
+          description: Error get all members        
+  /{memberCode}/borrowedBooks:
+    get:
+      tags:
+        - members
+      summary: Get All Borrowed Books by One Member
+      description: Return Borrowed Books  
+      operationId: getBorrowedBooks
+      parameters:
+        - name: memberCode
+          in: path
+          description: Member code
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  oneOf:
+                    - $ref: '#/components/schemas/Book'
+                    - $ref: '#/components/schemas/Book'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Book'
+        '404':
+          description: member code
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: 
+                    type: string
+                    example: Member M004 not found
+        '422':
+          description: Validation exception
+components:
+  schemas:
+    Member:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 67323927932
+        code:
+          type: string
+          example: M001
+        name:
+          type: string
+          example: Angga
+        _v:
+          type: integer
+          format: int64
+          example: 5
+        borrowedBooks:
+          type: array
+          items: 
+            oneOf:
+              - properties:
+                  id:
+                    type: integer
+                    example: 67323927940
+              - properties:
+                  id:
+                    type: integer
+                    example: 67323927941   
+      xml:
+        name: order
+    Book:
+      required:
+        - id
+        - code
+        - title
+        - stock
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 67323927932
+        code:
+          type: string
+          example: JK-45
+        title:
+          type: string
+          example: Harry Potter
+        author:
+          type: string
+          example: J.K Rowling
+        stock:
+          type: integer
+          format: int64
+          example: 1
+      xml:
+        name: members
+  securitySchemes:
+    petstore_auth:
+      type: oauth2
+      flows:
+        implicit:
+          authorizationUrl: https://petstore3.swagger.io/oauth/authorize
+          scopes:
+            write:pets: modify pets in your account
+            read:pets: read your pets
+    api_key:
+      type: apiKey
+      name: api_key
+      in: header
